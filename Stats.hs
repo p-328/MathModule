@@ -19,14 +19,18 @@ module Stats where
         ("Mean", (avg dataset)), 
         ("Sample Standard Deviation", (sampleStdev dataset)), 
         ("Population Standard Deviation", (populationStdev dataset))]
+    
+    findNumberOfItemsInFreqTable :: [(Double, Int)] -> Int
+    findNumberOfItemsInFreqTable dataset = summation [freq | (_, freq) <- dataset]
 
     extractValuesFromTable :: [(Double, Int)] -> [Double]
     extractValuesFromTable freqTable = [num * fromIntegral freq | (num, freq) <- freqTable]
 
     avgFreq :: [(Double, Int)] -> Double
-    avgFreq dataset = summation values / fromIntegral (length values)
+    avgFreq dataset = summation values / fromIntegral itemCount
         where 
             values = extractValuesFromTable dataset
+            itemCount = findNumberOfItemsInFreqTable dataset
 
     sampleStdevFreq :: [(Double, Int)] -> Double
     sampleStdevFreq dataset = sqrt (summation [pow (distance mean num) 2 | num <- values] / (fromIntegral (length values) - 1))
