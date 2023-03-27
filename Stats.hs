@@ -2,7 +2,7 @@ module Stats where
     import MathUtils
 
     avg :: [Double] -> Double
-    avg dataset = (summation dataset) / fromIntegral (length dataset)
+    avg dataset = summation dataset / fromIntegral (length dataset)
     
     sampleStdev :: [Double] -> Double
     sampleStdev dataset = sqrt (summation [pow (distance mean num) 2 | num <- dataset] / (fromIntegral (length dataset) - 1))
@@ -16,9 +16,9 @@ module Stats where
 
     describe :: [Double] -> [([Char], Double)]
     describe dataset = [
-        ("Mean", (avg dataset)), 
-        ("Sample Standard Deviation", (sampleStdev dataset)), 
-        ("Population Standard Deviation", (populationStdev dataset))]
+        ("Mean", avg dataset), 
+        ("Sample Standard Deviation", sampleStdev dataset), 
+        ("Population Standard Deviation", populationStdev dataset)]
     
     findNumberOfItemsInFreqTable :: [(Double, Int)] -> Int
     findNumberOfItemsInFreqTable dataset = summation [freq | (_, freq) <- dataset]
@@ -33,20 +33,27 @@ module Stats where
             itemCount = findNumberOfItemsInFreqTable dataset
 
     sampleStdevFreq :: [(Double, Int)] -> Double
-    sampleStdevFreq dataset = sqrt (summation [pow (distance mean num) 2 | num <- values] / (fromIntegral (length values) - 1))
+    sampleStdevFreq dataset = sqrt (summation [pow (distance mean num) 2 * fromIntegral freq | (num, freq) <- dataset] / itemCount)
         where 
             mean = avgFreq dataset
-            values = extractValuesFromTable dataset
+            itemCount = fromIntegral (findNumberOfItemsInFreqTable dataset - 1)
 
     populationStdevFreq :: [(Double, Int)] -> Double
-    populationStdevFreq dataset = sqrt (summation [pow (distance mean num) 2 | num <- values] / fromIntegral (length values))
+    populationStdevFreq dataset = sqrt (summation [pow (distance mean num) 2 * fromIntegral freq | (num, freq) <- dataset] / itemCount)
         where
             mean = avgFreq dataset
-            values = extractValuesFromTable dataset
+            itemCount = fromIntegral (findNumberOfItemsInFreqTable dataset)
 
     describeFreq :: [(Double, Int)] -> [([Char], Double)]
     describeFreq dataset = [
-        ("Mean", (avgFreq dataset)),
-        ("Sample Standard Deviation", (sampleStdevFreq dataset)),
-        ("Population Standard Deviation", (populationStdevFreq dataset))]
+        ("Mean", avgFreq dataset),
+        ("Sample Standard Deviation", sampleStdevFreq dataset),
+        ("Population Standard Deviation", populationStdevFreq dataset)]
 
+    zScore :: Double -> [(Double, Int)] -> Double
+    zScore x dataset = (x - mean) / stdev
+      where 
+        mean = avgFreq dataset 
+        stdev = populationStdevFreq dataset
+
+    
